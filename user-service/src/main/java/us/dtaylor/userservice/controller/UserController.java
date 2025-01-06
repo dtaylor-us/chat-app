@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,16 +40,23 @@ public class UserController {
         }
     }
 
+    @GetMapping("/protected")
+    public ResponseEntity<String> protectedEndpoint(Authentication authentication) {
+        System.out.println("Authentication: " + authentication); // Log authentication details
+        return ResponseEntity.ok("Access Granted!");
+    }
+
+
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody User user) {
+        User existingUser = userService.findByUsername(user.getUsername()).orElse(null);
+
         try {
             // Authenticate the user
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
-            );
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
 
             // Generate the JWT token
-            String token = jwtUtils.generateToken(user.getUsername());
+            String token = jwtUtils.generateToken(existingUser);
             return ResponseEntity.ok(token);
         } catch (Exception e) {
             return ResponseEntity.status(401).body("Invalid credentials");
