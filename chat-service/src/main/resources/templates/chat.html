@@ -64,16 +64,16 @@
 
 <script>
   let stompClient = null;
-  let currentRoomId = 'default'; // Default room
+  let currentRoomId = 'beta'; // Default room
 
   function connect() {
     const socket = new SockJS('/ws');
     stompClient = Stomp.over(socket);
-
+    console.log('currentRoomId: ' + currentRoomId);
     stompClient.connect({}, function() {
-      console.log('Connected to WebSocket');
-      fetchRooms(); // Load available rooms
-      loadMessages(); // Load messages for the default room
+      // console.log('Connected to WebSocket');
+      fetchRooms();
+      loadMessages();
       subscribeToRoom(currentRoomId); // Subscribe to the default room
     });
   }
@@ -89,11 +89,12 @@
   function switchRoom() {
     const roomSelect = document.getElementById('room-select');
     const newRoomId = roomSelect.value;
-
+    console.log(`Switching to room: ${newRoomId}`);
     if (newRoomId !== currentRoomId) {
       currentRoomId = newRoomId;
-      connect(); // Reconnect and subscribe to the new room
+      subscribeToRoom(currentRoomId); // Reconnect and subscribe to the new room
       document.getElementById('messages').innerHTML = ''; // Clear previous messages
+      loadMessages();
     }
   }
 
@@ -136,6 +137,8 @@
         roomSelect.appendChild(option);
       });
     });
+    console.log('currentRoomId: ' + currentRoomId);
+    document.getElementById('room-select').value = currentRoomId;
   }
 
   function loadMessages() {
@@ -160,6 +163,7 @@
         body: JSON.stringify({name: roomName}),
       }).then(response => {
         if (response.ok) {
+          document.getElementById('create-room-input').value = '';
           fetchRooms(); // Reload rooms
         }
       });

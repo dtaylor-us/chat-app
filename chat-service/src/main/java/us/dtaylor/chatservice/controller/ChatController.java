@@ -32,6 +32,7 @@ public class ChatController {
 
     @MessageMapping("/chat.sendMessage/{roomId}")
     public void sendMessage(@DestinationVariable String roomId, ChatMessage chatMessage) {
+
         chatMessage.setChatRoomId(roomId);
         chatService.saveMessage(chatMessage);
         messagingTemplate.convertAndSend("/topic/" + roomId, chatMessage);
